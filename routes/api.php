@@ -19,3 +19,6 @@ Route::middleware(['auth:api'])->group(function () {
     // All routes here are protected
     Route::get('users', 'UserController@index');
 });
+
+
+Route::get('class','Testcontroller@getTest');

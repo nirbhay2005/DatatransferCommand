@@ -7,9 +7,8 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Passport\HasApiTokens;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class User
@@ -23,28 +22,35 @@ use Laravel\Passport\HasApiTokens;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  *
- * @package App\Models
+ * @property Collection|Comment[] $comments
+ *
+ * @package Laravel\Models
+ * @method static insert(array $array)
  */
-class User extends Authenticatable
+class User extends Model
 {
-    use HasApiTokens, Notifiable;
+	public $table = 'users';
+	public $connection = 'mysql';
+	protected $dates = [
+		'email_verified_at'
+	];
 
-    protected $table = 'users';
+	protected $hidden = [
+		'password',
+		'remember_token'
+	];
 
-    protected $dates = [
-        'email_verified_at'
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token'
-    ];
-
-    protected $fillable = [
-        'name',
-        'email',
-        'email_verified_at',
-        'password',
-        'remember_token'
-    ];
+	protected $fillable = [
+	    'id',
+		'name',
+		'email',
+		'email_verified_at',
+		'password',
+		'remember_token'
+	];
+/*
+	public function comments()
+	{
+		return $this->hasMany(Comment::class, 'comment_user');
+	}*/
 }
