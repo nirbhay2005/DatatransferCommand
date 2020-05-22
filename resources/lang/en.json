@@ -1,0 +1,7 @@
+{
+    "Command Successful": "Command :command successful",
+    "Exception occurred during command": "Exception occurred during command :command",
+    "Data has been transferred till id:": "Data has been transferred till id: :id",
+    "Error:": "Error: :exception",
+    "Thanks,": "Thanks,"
+}

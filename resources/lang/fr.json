@@ -1,0 +1,8 @@
+{
+    "Data transfer successful for": "Transfert de données réussi pour :command",
+    "Command Successful": "Commande :command réussie",
+    "Exception occurred during command": "Une exception s'est produite lors de la commande :command",
+    "Data has been transferred till id:": "Les données ont été transférées jusquà id: :id",
+    "Error:": "Erreur: :exception",
+    "Thanks,": "Merci,"
+}
