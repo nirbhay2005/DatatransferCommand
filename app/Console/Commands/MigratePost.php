@@ -4,13 +4,13 @@ namespace App\Console\Commands;
 
 use App\Models\Post;
 use App\Models\UserPost;
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class MigratePost extends BaseCommand
 {
-   protected $migrateFromId = 2001;
+  // protected $migrateFromId = 2001;
+    //protected $commandStatusRecipients = ['nirbhay95m@gmail.com'];
     /**
      * The name and signature of the console command.
      *
@@ -23,7 +23,7 @@ class MigratePost extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Transfers post data from source model to target model';
 
     /**
      * Create a new command instance.
@@ -67,7 +67,7 @@ class MigratePost extends BaseCommand
             $this->executionEndTime = date("Y-m-d H:i:s");
             $this->commandStatus = true;
             $this->exception = '';
-            $this->getExecutionTime();
+            $this->getExecutionStatus();
             return true;
 
         } catch (\Exception $exception) {
@@ -75,8 +75,8 @@ class MigratePost extends BaseCommand
             $this->lastProcessedId = $this->getLastIdTarget();
             $this->commandStatus = false;
             $this->executionEndTime = date("Y-m-d H:i:s");
-            $this->exception = '(' . $exception->getMessage() . ') at line ' . $exception->getLine() . ' in ' . $exception->getFile() . $exception->getTraceAsString();
-            $this->getExecutionTime();
+            $this->exception = '(' . $exception->getMessage() . ') at line ' . $exception->getLine() . ' in ' . $exception->getFile();
+            $this->getExecutionStatus();
             return false;
         }
 

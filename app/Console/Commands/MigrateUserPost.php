@@ -2,19 +2,17 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Post;
+
 use App\Models\User;
-use Exception;
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserPost;
 use Illuminate\Support\Facades\Log;
-use phpDocumentor\Reflection\Types\Parent_;
-use Symfony\Component\Console\Helper\ProgressBar;
+
 
 class MigrateUserPost extends BaseCommand
 {
-    protected $migrateFromId = 1001;
+   // protected $migrateFromId = 8001;
+    //protected $commandStatusRecipients = ['nirbhay95m@gmail.com'];
     /**
      *
      * The name and signature of the console command.
@@ -27,7 +25,7 @@ class MigrateUserPost extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Transfers user data from source model to target model';
 
     /**
      * Create a new command instance.
@@ -57,37 +55,36 @@ class MigrateUserPost extends BaseCommand
 
             $this->executionStartTime = date("Y-m-d H:i:s");
             parent::createBar();
-            //$this->sourceModel::select('id','user_id','name','email', DB::raw('COUNT(*) as `count`'))
-              //  ->groupBy('user_id','name','email')
-                //->havingRaw('COUNT(*) >= 1')
+            //$this->sourceModel::select('id','user_id','name','emails', DB::raw('COUNT(*) as `count`'))
+            //  ->groupBy('user_id','name','emails')
+            //->havingRaw('COUNT(*) >= 1')
             $this->sourceModel::where('id', '>', $this->getLastIdTarget())
                 ->orderBy('id', 'ASC')
                 ->chunk($this->defaultChunkSize, function ($models) {
                     DB::beginTransaction();
                     foreach ($models as $model) {
-                    $this->targetModel::insert(['id' => $model->id,'user_id'=> $model->user_id ,'name' => $model->name, 'email' => $model->email]);
-                    parent::advanceBar();
-                    //if($this->getLastIdTarget()==10000){
-                    //throw new Exception('oops');}
+                        $this->targetModel::insert(['id' => $model->id, 'user_id' => $model->user_id, 'name' => $model->name, 'email' => $model->email]);
+                        parent::advanceBar();
+                        //if($this->getLastIdTarget()==10000){
+                        //throw new Exception('oops');}
                     }
                     DB::commit();
-            });
+                });
             Parent::finishBar();
             $this->lastProcessedId = $this->getLastIdTarget();
             Log::info('Data in (' . $this->targetModel->table . ') table saved upto', [$this->getLastIdTarget()]);
             $this->executionEndTime = date("Y-m-d H:i:s");
             $this->commandStatus = true;
             $this->exception = '';
-            $this->getExecutionTime();
+            $this->getExecutionStatus();
             return true;
-
         } catch (\Exception $exception) {
             DB::rollBack();
             $this->lastProcessedId = $this->getLastIdTarget();
             $this->commandStatus = false;
             $this->executionEndTime = date("Y-m-d H:i:s");
-            $this->exception = '(' . $exception->getMessage() . ') at line ' . $exception->getLine() . ' in ' . $exception->getFile() . $exception->getTraceAsString();
-            $this->getExecutionTime();
+            $this->exception = '(' . $exception->getMessage() . ') at line ' . $exception->getLine() . ' in ' . $exception->getFile();
+            $this->getExecutionStatus();
             return false;
         }
     }

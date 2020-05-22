@@ -2,17 +2,19 @@
 
 namespace App\Console\Commands;
 
+use App\Events\ProcessCommandException;
+use App\Events\ProcessCommandSuccess;
+use App\Models\MailRecipient;
+use App\Models\ProcessCommand;
+use Exception;
+use http\Exception\RuntimeException;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class BaseCommand extends Command
+class BaseCommand extends Command implements ShouldQueue
 {
-
     protected $sourceModel;
-    protected $sourceField;
     protected $targetModel;
-    protected $targetField;
     protected $defaultChunkSize = 200;
     protected $migrateFromId = 0;
     protected $executionStartTime;
@@ -22,8 +24,7 @@ class BaseCommand extends Command
     protected $exception;
     protected $commandStatus;
     protected $bar;
-    protected $lastProcessedCount;
-    protected $query;
+    protected $commandStatusRecipients;
     /**
      * The name and signature of the console command.
      *
@@ -37,7 +38,6 @@ class BaseCommand extends Command
      * @var string
      */
     protected $description = 'Command description';
-    public $model;
 
     /**
      * @return int the last id of the target table.
@@ -54,6 +54,20 @@ class BaseCommand extends Command
             }
         } elseif ($this->migrateFromId > 0) {
             return $this->migrateFromId - 1;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     *
+     * @return int the last id of the source table.
+     */
+    protected function getLastIdSource()
+    {
+        $id = $this->sourceModel::select(['id'])->orderBy('id', 'desc')->first();
+        if ($id != null) {
+            return $id->id;
         } else {
             return 0;
         }
@@ -76,31 +90,28 @@ class BaseCommand extends Command
     }
 
     /**
-     * logs the command status data into command_log table.
+     * logs the command status data into process_commands table.
      */
-    protected function getExecutionTime()
+    protected function getExecutionStatus()
     {
         $this->executionTime = strtotime($this->executionEndTime) - strtotime($this->executionStartTime);
-        DB::connection('mysql')->table('command_log')
-            ->insert(['command_name' => $this->signature,
-                'start_time' => $this->executionStartTime,
-                'end_time' => $this->executionEndTime,
-                'exec_time' => $this->executionTime,
-                'status' => $this->commandStatus,
-                'last_processed_id' => $this->lastProcessedId,
-                'exception' => $this->exception]);
-    }
-
-    /**
-     * @return int the last id of the source table.
-     */
-    protected function getLastIdSource()
-    {
-        $id = $this->sourceModel::select(['id'])->orderBy('id', 'desc')->first();
-        if ($id != null) {
-            return $id->id;
-        } else {
-            return 0;
+        $commandStatus = ProcessCommand::insert(['command_name' => $this->signature,
+            'start_time' => $this->executionStartTime,
+            'end_time' => $this->executionEndTime,
+            'exec_time' => $this->executionTime,
+            'status' => $this->commandStatus,
+            'last_processed_id' => $this->lastProcessedId,
+            'exception' => $this->exception]);
+        $this->commandStatusRecipients = MailRecipient::all();
+        if ($commandStatus) {
+            $processCommand = ProcessCommand::select()->orderBy('id', 'desc')->first();
+            if ($processCommand->status == 1) {
+                event(new ProcessCommandSuccess($processCommand, $this->commandStatusRecipients));//For sending mail through events
+                //SendEmail::dispatch(new ProcessCommandSuccessfulMail($processCommand), $this->commandStatusRecipients);//For sending mail through jobs
+            } else {
+                event(new ProcessCommandException($processCommand, $this->commandStatusRecipients));
+                //SendEmail::dispatch(new ProcessCommandExceptionMail($processCommand), $this->commandStatusRecipients);
+            }
         }
     }
 
@@ -109,16 +120,20 @@ class BaseCommand extends Command
      */
     protected function createBar()
     {
-        if($this->getCountSource() - $this->getCountBelowMigrateFromID() - $this->getCountTarget() != 0){
-            $this->bar = $this->output->createProgressBar($this->getCountSource() - $this->getCountBelowMigrateFromID() - $this->getCountTarget());
+        if ($this->getCountSource() - $this->getCountBelowMigrateFromID() - $this->getCountTarget() != 0) {
+            if($this->migrateFromId < $this->getLastIdTarget()){
+                $this->bar = $this->output->createProgressBar($this->getCountSource() - $this->getCountTarget());
+            }else{
+                $this->bar = $this->output->createProgressBar($this->getCountSource() - $this->getCountBelowMigrateFromID());
+            }
             $this->bar->setFormat('%current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% -- %message%');
-            $this->bar->setMessage('Data is being transferred to '.$this->targetModel->table.' table' );
-        }else{
+            $this->bar->setMessage('Data is being transferred to ' . $this->targetModel->table . ' table');
+            $this->bar->start();
+        } else {
             $this->bar = $this->output->createProgressBar();
-            $this->bar->setFormat('[%bar%] -- %message%');
+            $this->bar->setFormat('-- %message%');
             $this->bar->setMessage('No data to transfer');
         }
-        $this->bar->start();
     }
 
     /**
@@ -139,18 +154,9 @@ class BaseCommand extends Command
         return $this->bar->finish();
     }
 
+    /** @noinspection PhpUnhandledExceptionInspection */
     public function shutdown()
     {
-        throw new \Exception('Keyboard Interrupt detected');
-    }
-
-    protected function createInsertArray($model)
-    {
-        for($i=0;$i<count($this->sourceField);$i++) {
-           $this->sourceField[$i] = ($model->{$this->sourceField[$i]});
-        }
-
-        $arr = array_combine($this->targetField,$this->sourceField);
-        return $arr;
+        throw new Exception(RuntimeException::class);
     }
 }

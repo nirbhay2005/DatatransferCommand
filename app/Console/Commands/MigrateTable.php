@@ -20,7 +20,7 @@ class MigrateTable extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Run commands in sequence';
 
     /**
      * Create a new command instance.
@@ -39,11 +39,12 @@ class MigrateTable extends BaseCommand
      */
     public function handle()
     {
-        $commandRelation = ['migrate:userpost', 'migrate:post', 'migrate:comment'];
+        $commandSequence = ['migrate:userpost', 'migrate:post', 'migrate:comment'];
 
-        foreach ($commandRelation as $command) {
+        foreach ($commandSequence as $command) {
             if ($this->call($command) == 1) {
                 continue;
+
             } else {
                 exit();
             }
