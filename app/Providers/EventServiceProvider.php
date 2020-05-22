@@ -17,6 +17,12 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        'App\Events\ProcessCommandSuccess' => [
+            'App\Listeners\SendProcessCommandSuccessMail',
+        ],
+        'App\Events\ProcessCommandException' => [
+            'App\Listeners\SendProcessCommandExceptionMail',
+        ],
     ];
 
     /**
