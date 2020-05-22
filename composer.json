@@ -9,15 +9,15 @@
     "license": "MIT",
     "require": {
         "php": "^7.2.5",
+        "ext-pcntl": "*",
         "barryvdh/laravel-cors": "^1.0",
         "fideloper/proxy": "^4.2",
         "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^7.0",
+        "laravel/nexmo-notification-channel": "^2.3",
         "laravel/passport": "^8.4",
         "laravel/tinker": "^2.0",
-        "luezoid/laravel-core": "^7.0",
-      "ext-pcntl": "*",
-      "ext-http": "*"
+        "luezoid/laravel-core": "^7.0"
     },
     "require-dev": {
         "facade/ignition": "^2.0",

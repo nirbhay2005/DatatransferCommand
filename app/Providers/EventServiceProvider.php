@@ -18,10 +18,10 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         'App\Events\ProcessCommandSuccess' => [
-            'App\Listeners\SendProcessCommandSuccessMail',
+            'App\Listeners\SendProcessCommandSuccessMail', 'App\Listeners\SendProcessCommandSuccessNotification',
         ],
         'App\Events\ProcessCommandException' => [
-            'App\Listeners\SendProcessCommandExceptionMail',
+            'App\Listeners\SendProcessCommandExceptionMail', 'App\Listeners\SendProcessCommandExceptionNotification',
         ],
     ];
 
