@@ -15,7 +15,7 @@ class CreatePostdataSeeder extends Seeder
     {
 
         $faker = \Faker\Factory::create();
-        for ($i = 0; $i < 5000; $i++) {
+        for ($i = 0; $i < 10000; $i++) {
             $faker->seed($i);
             DB::table('user_post')
                 ->insert([

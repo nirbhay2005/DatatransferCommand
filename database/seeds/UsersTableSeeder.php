@@ -12,16 +12,16 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        
+
 
         \DB::table('users')->delete();
-        
+
         \DB::table('users')->insert(array (
-            0 => 
+            0 =>
             array (
                 'id' => 1,
                 'name' => 'Admin',
-                'email' => 'admin@example.com',
+                'emails' => 'admin@example.com',
                 'email_verified_at' => NULL,
                 'password' => \Illuminate\Support\Facades\Hash::make('asdf@1234'),
                 'remember_token' => NULL,
@@ -29,7 +29,7 @@ class UsersTableSeeder extends Seeder
                 'updated_at' => NULL,
             ),
         ));
-        
-        
+
+
     }
 }

@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int $user_id
  * @property string $name
- * @property string $email
+ * @property string $emails
  * @property string $post
  * @property string $comment
  * @property int $comment_user
@@ -43,7 +43,7 @@ class UserPost extends Model
 	    'id',
 		'user_id',
 		'name',
-		'email',
+		'emails',
 		'post',
 		'comment',
 		'comment_user'

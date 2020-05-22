@@ -16,7 +16,6 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-     \App\Console\Commands\Normalise::class,
         MigrateUserPost::class,
         MigratePost::class,
         MigrateTable::class

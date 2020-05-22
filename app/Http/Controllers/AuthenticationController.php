@@ -27,16 +27,16 @@ class AuthenticationController extends ApiController
         if ($validator->fails()) {
             return $this->standardResponse(null, $validator->errors()->messages(), 400, ErrorConstants::TYPE_BAD_REQUEST_ERROR);
         }
-        $email = $request->json('email');
+        $email = $request->json('emails');
         $password = $request->json('password');
 
         /** @var User $user */
-        $user = User::where('email', '=', $email)->first();
+        $user = User::where('emails', '=', $email)->first();
         if (!$user) {
             throw new BadRequestHttpException(__('User not found'));
         }
 
-        if (!Auth::attempt(['email' => $email, 'password' => $password])) {
+        if (!Auth::attempt(['emails' => $email, 'password' => $password])) {
             throw new InvalidCredentialsException(__('Invalid Credentials'), 401);
         }
 
