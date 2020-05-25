@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
@@ -23,7 +24,7 @@ use Illuminate\Notifications\Notifiable;
  *
  * @package Laravel\Models
  */
-class MailRecipient extends Model
+class MailRecipient extends Model implements HasLocalePreference
 {
     use Notifiable;
 	protected $table = 'mail_recipients';
@@ -38,6 +39,11 @@ class MailRecipient extends Model
 		'locale',
 		'phone_number'
 	];
+
+    public function preferredLocale()
+    {
+        return $this->locale;
+    }
 
     public function routeNotificationForNexmo()
     {

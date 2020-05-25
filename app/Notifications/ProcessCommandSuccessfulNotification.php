@@ -77,10 +77,4 @@ class ProcessCommandSuccessfulNotification extends Notification implements Shoul
         return (new NexmoMessage)
             ->content($command.' is successful. Data transferred till id: '.$id);
     }
-
-    public function viaQueues()
-    {
-        return [
-        ];
-    }
 }

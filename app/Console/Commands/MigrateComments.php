@@ -5,13 +5,12 @@ namespace App\Console\Commands;
 
 use App\Models\Comment;
 use App\Models\UserPost;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class MigrateComments extends BaseCommand
 {
-   // protected $migrateFromId = 3001;
-    //protected $commandStatusRecipients = ['nirbhay95m@gmail.com'];
+    protected $sourceField = ['id', 'comment', 'comment_user'];
+    protected $targetField = ['id', 'comment', 'comment_user'];
+
     /**
      * The name and signature of the console command.
      *
@@ -24,7 +23,7 @@ class MigrateComments extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Transfers comments data from source model to target model';
+    protected $description = 'Transfers comments data from source model to target model as per defined source and target fields';
 
     /**
      * Create a new command instance.
@@ -45,43 +44,9 @@ class MigrateComments extends BaseCommand
      */
     public function handle()
     {
-        try {
-            pcntl_async_signals(true);
-
-            pcntl_signal(SIGINT, [$this, 'shutdown']); // Call $this->shutdown() on SIGINT
-            pcntl_signal(SIGTERM, [$this, 'shutdown']); // Call $this->shutdown() on SIGTERM
-            $this->executionStartTime = date("Y-m-d H:i:s");
-            parent::createBar();
-            //$this->sourceModel::select('comment', 'comment_user',DB::Raw('COUNT(*) as `count`'))
-              //  ->groupBy('comment', 'comment_user')
-                //->havingRaw('COUNT(*) >= 1')
-            $this->sourceModel::where('id', '>', $this->getLastIdTarget())->orderBy('id', 'ASC')->chunk($this->defaultChunkSize, function ($models) {
-                DB::beginTransaction();
-                foreach ($models as $model) {
-                    $this->targetModel::insert(['id' => $model->id, 'comment' => $model->comment, 'comment_user' => $model->comment_user]);
-                    parent::advanceBar();
-                    //if($this->getLastIdTarget()==10000){
-                    //throw new Exception('oops');}
-                }
-                DB::commit();
-            });
-
-            Parent::finishBar();
-            $this->lastProcessedId = $this->getLastIdTarget();
-            Log::info('Data in (' . $this->targetModel->table . ') table saved upto', [$this->getLastIdTarget()]);
-            $this->executionEndTime = date("Y-m-d H:i:s");
-            $this->commandStatus = true;
-            $this->exception = '';
-            $this->getExecutionStatus();
+        if($this->transferSourceToTarget()){
             return true;
-
-        } catch (\Exception $exception) {
-            DB::rollBack();
-            $this->lastProcessedId = $this->getLastIdTarget();
-            $this->commandStatus = false;
-            $this->executionEndTime = date("Y-m-d H:i:s");
-            $this->exception = '(' . $exception->getMessage() . ') at line ' . $exception->getLine() . ' in ' . $exception->getFile();
-            $this->getExecutionStatus();
+        }else{
             return false;
         }
     }

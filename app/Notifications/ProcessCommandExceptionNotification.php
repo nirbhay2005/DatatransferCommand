@@ -15,10 +15,11 @@ class ProcessCommandExceptionNotification extends Notification implements Should
     protected $exception;
     protected $lastId;
     protected $commandName;
+
     /**
      * Create a new notification instance.
      *
-     * @return void
+     * @param ProcessCommand $processCommand
      */
     public function __construct(ProcessCommand $processCommand)
     {
@@ -42,7 +43,7 @@ class ProcessCommandExceptionNotification extends Notification implements Should
      * Get the mail representation of the notification.
      *
      * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
+     * @return MailMessage
      */
     public function toMail($notifiable)
     {

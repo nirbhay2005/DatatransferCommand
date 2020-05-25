@@ -2,10 +2,6 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use function foo\func;
-use Illuminate\Support\Arr;
-
 class MigrateTable extends BaseCommand
 {
     /**
@@ -20,7 +16,7 @@ class MigrateTable extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Run commands in sequence';
+    protected $description = 'Run migration commands in sequence';
 
     /**
      * Create a new command instance.
@@ -39,7 +35,7 @@ class MigrateTable extends BaseCommand
      */
     public function handle()
     {
-        $commandSequence = ['migrate:userpost', 'migrate:post', 'migrate:comment'];
+        $commandSequence = ['migrate:users', 'migrate:post', 'migrate:comment'];
 
         foreach ($commandSequence as $command) {
             if ($this->call($command) == 1) {

@@ -3,11 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use App\Models\UserPost;
 
 class MigrateUsersTable extends BaseCommand
 {
+    protected $sourceField = ['id', 'user_id', 'name', 'email'];
+    protected $targetField = ['id', 'user_id', 'name', 'email'];
     /**
      * The name and signature of the console command.
      *
@@ -20,7 +21,7 @@ class MigrateUsersTable extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Transfers comments data from source model to target model as per defined source and target fields';
 
     /**
      * Create a new command instance.
@@ -29,7 +30,8 @@ class MigrateUsersTable extends BaseCommand
      */
     public function __construct()
     {
-        $this->sourceModel = new User();
+        $this->sourceModel = new UserPost();
+        $this->targetModel = new User();
         parent::__construct();
     }
 
@@ -40,16 +42,10 @@ class MigrateUsersTable extends BaseCommand
      */
     public function handle()
     {
-        $this->sourceModel::where('id', '>', $this->getLastIdTarget())->orderBy('id', 'ASC')->chunk($this->defaultChunkSize, function ($users) {
-            try {
-                DB::beginTransaction();
-                foreach ($users  as $user) {
-
-                }
-                DB::commit();
-            } catch (\Exception $exception) {
-                DB::rollBack();
-            }
-        });
+        if($this->transferSourceToTarget()){
+            return true;
+        }else{
+            return false;
+        }
     }
 }

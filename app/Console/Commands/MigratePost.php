@@ -4,13 +4,11 @@ namespace App\Console\Commands;
 
 use App\Models\Post;
 use App\Models\UserPost;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class MigratePost extends BaseCommand
 {
-  // protected $migrateFromId = 2001;
-    //protected $commandStatusRecipients = ['nirbhay95m@gmail.com'];
+    protected $sourceField = ['id', 'post', 'user_id'];
+    protected $targetField = ['id', 'post_desc', 'user_id'];
     /**
      * The name and signature of the console command.
      *
@@ -23,7 +21,7 @@ class MigratePost extends BaseCommand
      *
      * @var string
      */
-    protected $description = 'Transfers post data from source model to target model';
+    protected $description = 'Transfers post data from source model to target model as per defined source and target fields';
 
     /**
      * Create a new command instance.
@@ -44,42 +42,11 @@ class MigratePost extends BaseCommand
      */
     public function handle()
     {
-        try {
-            pcntl_async_signals(true);
-            pcntl_signal(SIGINT, [$this, 'shutdown']); // Call $this->shutdown() on SIGINT
-            pcntl_signal(SIGTERM, [$this, 'shutdown']); // Call $this->shutdown() on SIGTERM
-            $this->executionStartTime = date("Y-m-d H:i:s");
-            $this->createBar();
-            $this->sourceModel::where('id', '>', $this->getLastIdTarget())
-                ->orderBy('id', 'ASC')
-                ->chunk($this->defaultChunkSize, function ($models) {
-                    DB::beginTransaction();
-                    foreach ($models as $model) {
-                        $this->targetModel::insert(['id' => $model->id, 'post_desc' => $model->post, 'user_id' => $model->user_id]);
-                        $this->advanceBar();
-                    }
-                    DB::commit();
-                });
-
-            $this->finishBar();
-            $this->lastProcessedId = $this->getLastIdTarget();
-            Log::info('Data in (' . $this->targetModel->table . ') table saved upto', [$this->getLastIdTarget()]);
-            $this->executionEndTime = date("Y-m-d H:i:s");
-            $this->commandStatus = true;
-            $this->exception = '';
-            $this->getExecutionStatus();
+        if($this->transferSourceToTarget()){
             return true;
-
-        } catch (\Exception $exception) {
-            DB::rollBack();
-            $this->lastProcessedId = $this->getLastIdTarget();
-            $this->commandStatus = false;
-            $this->executionEndTime = date("Y-m-d H:i:s");
-            $this->exception = '(' . $exception->getMessage() . ') at line ' . $exception->getLine() . ' in ' . $exception->getFile();
-            $this->getExecutionStatus();
+        }else{
             return false;
         }
-
     }
 }
 
